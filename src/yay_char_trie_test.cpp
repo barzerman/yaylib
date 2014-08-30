@@ -1,0 +1,118 @@
+/*============================================================================
+The MIT License (MIT)
+
+Copyright (c) 2014 Andre Yanpolsky, Max Eronin, Georg Rudoy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+============================================================================*/
+
+#include <algorithm>
+#include <vector>
+#include <map>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <yay/yay_debug.h>
+#include <yay/yay_trie.h>
+
+typedef yay::char_trie<uint32_t> CharTrie;
+struct Uint32CharTrie_fullpath_print_cb {
+	yay::trie_visitor_continue_t operator()( const CharTrie::Trie::Path& p)
+
+	{
+		for( CharTrie::Trie::Path::const_iterator i = p.begin(); i != p.end();++i ) {
+			std::cerr << (*i)->first << ":" << (*i)->second.data() << "/" ;
+		}
+		std::cerr << std::endl;
+		return yay::TRIE_VISITOR_CONTINUE;
+	}
+};
+
+struct Uint32CharTrie_print_cb {
+	yay::trie_visitor_continue_t operator()( const CharTrie::Trie::Path& p)
+
+	{
+		if( !p.size() || p.back()->second.data() == 0xffffffff ) 
+			return yay::TRIE_VISITOR_CONTINUE;
+
+		for( CharTrie::Trie::Path::const_iterator i = p.begin(); i != p.end();++i ) {
+			std::cerr << (*i)->first ;
+		}
+		std::cerr << ":" << p.back()->second.data() << std::endl;
+		return yay::TRIE_VISITOR_CONTINUE;
+	}
+};
+
+/// end of spelling affix trie 
+int main( int argc, char* argv[] ) 
+{
+	//// 
+	{
+		Uint32CharTrie_print_cb cb;
+		CharTrie::Trie ctrie;
+		
+		
+		char buf[1024];
+		int id= 0;
+		
+		std::ifstream inFile;
+		if( argc > 1 ) {
+			inFile.open( argv[1] );
+			if( !inFile.is_open() ) 
+				std::cerr << "cant open " << argv[1] << std::cerr;
+			
+		}
+		while( inFile.getline( buf, sizeof(buf) ) ) {
+			/*
+			if( !strlen(buf) ) 
+				break;
+			*/
+			CharTrie::add( ctrie, buf, id++, 0xffffffff );
+		}
+
+		CharTrie::add( ctrie, "he", id++, 0xffffffff );
+		CharTrie::add( ctrie, "hello", id++, 0xffffffff );
+		CharTrie::add( ctrie, "hell", id++, 0xffffffff );
+
+		if( id < 100000 ) {
+			yay::trie_visitor< CharTrie::Trie, Uint32CharTrie_print_cb > vis(cb);
+			vis.visit(ctrie);
+		}
+		
+		
+		while( true ) {
+			std::vector< int > intVec;
+			int i4=0;
+			std::cout << "Enter word:";
+			
+			std::cin.getline( buf, sizeof(buf) );
+				
+			typedef std::pair< const CharTrie::Trie*, const char*  > PathPair;
+			
+			PathPair pp = CharTrie::matchString( ctrie, buf );
+			if( pp.first ) {
+				std::cerr << "substring matched:" << pp.first->data() << "~"  << std::string( buf, pp.second- buf ) << std::endl;
+				std::cerr << "\n";
+			} else 
+				std::cerr << "substring did not match!\n";
+		}
+	}
+
+}
