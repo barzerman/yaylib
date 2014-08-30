@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project (yay)
 set(CMAKE_BUILD_TYPE Release)
 
-find_package(Boost COMPONENTS system python regex filesystem REQUIRED)
+find_package(Boost COMPONENTS system python regex thread filesystem REQUIRED)
 find_package(EXPAT REQUIRED)
 find_package(PythonLibs REQUIRED)
 
@@ -36,7 +36,9 @@ set(SOURCES
 set(EXTRA_LIBS ${EXTRA_LIBS}
                ${Boost_SYSTEM_LIBRARY}
                ${Boost_FILESYSTEM_LIBRARY}
-               ${Boost_REGEX_LIBRARY})
+               ${Boost_REGEX_LIBRARY}
+               ${Boost_THREAD_LIBRARY}
+               pthread)
 
 add_library(yay SHARED ${SOURCES})
 add_library(yay_static STATIC ${SOURCES})
