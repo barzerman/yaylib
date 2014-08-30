@@ -2,7 +2,6 @@
 
 To build it:
 
-
     git clone "git@github.com:barzerman/yaylib.git"
     cd yaylib/build
     cmake ..
