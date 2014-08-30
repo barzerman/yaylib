@@ -43,6 +43,9 @@ set(EXTRA_LIBS ${EXTRA_LIBS}
 add_library(yay SHARED ${SOURCES})
 add_library(yay_static STATIC ${SOURCES})
 set_target_properties(yay_static PROPERTIES OUTPUT_NAME yay)
+target_link_libraries (yay ${EXTRA_LIBS})
+target_link_libraries (yay_static ${EXTRA_LIBS})
+
 
 install(TARGETS yay yay_static
         RUNTIME DESTINATION bin
