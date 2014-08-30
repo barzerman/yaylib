@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 /// superfast russian utf8 stuff 
 namespace yay {
 
